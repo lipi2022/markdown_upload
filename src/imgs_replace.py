@@ -21,23 +21,18 @@ def replace_img_src(root_dir, dest_dir, storage):
 
             filename, file_extension = os.path.splitext(file)
             if file_extension == ".md":
-                # print(dir_path, "/", file, sep="")
-                # print(dest_dir_new, "/", file, sep="")
-                if filename == "DatabrickFinance":  # just debug
-                    print("filename:", filename)
-                    md_file = dir_path + "/" + file
-                    dest_file = dest_dir_new + "/" + file
+                md_file = dir_path + "/" + file
+                dest_file = dest_dir_new + "/" + file
 
-                    # check dest_dir exist
-                    if not os.path.exists(dest_dir_new):
-                        os.makedirs(dest_dir_new)
+                # check dest_dir exist
+                if not os.path.exists(dest_dir_new):
+                    os.makedirs(dest_dir_new)
 
-                    img_src_change(md_file, dest_file, storage)
+                img_src_change(md_file, dest_file, storage)
 
 
 # md_file,dest_file : file with path
-def img_src_change(md_file, dest_file, storage):
-    print("md file, dest file", md_file, dest_file)
+def img_src_change(md_file, dest_file_path, storage):
 
     with open(md_file, "r") as file:
         data = file.read()
@@ -46,9 +41,12 @@ def img_src_change(md_file, dest_file, storage):
         new_data = regex_images(data, storage)
 
         # write new data to new file
-        f = open(dest_file, "w")
-        f.write(new_data)  # overwrite existing file 
+        f = open(dest_file_path, "w")
+        f.write(new_data)  # overwrite existing file
         f.close()
+
+        # upload markdown to cloud storage
+        storage.upload_object(dest_file_path, "markdown")
 
         # close read file
         file.close()
@@ -61,7 +59,7 @@ def regex_images(data, storage):
     # get img src
     for img_tuple in img_srcs:
         if img_tuple[1]:  # tuple's second item is src,first is description
-            new_img_src = storage.upload_img(img_tuple[1])
+            new_img_src = storage.upload_object(img_tuple[1], "image")
 
             # replace data img src with new_img_src
             data.replace(img_tuple[1], new_img_src)

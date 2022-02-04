@@ -23,13 +23,15 @@ if __name__ == "__main__":
     # init cloud storage
     if (
         config["GOOGLE"]["Project"]
-        and config["GOOGLE"]["Bucket"]
+        and config["GOOGLE"]["ImageBucket"]
+        and config["GOOGLE"]["MarkdownBucket"]
         and config["GOOGLE"]["ServiceAccount"]
         and config["GOOGLE"]["Credential"]
     ):
         storage = GoogleStorage(
             config["GOOGLE"]["Project"],
-            config["GOOGLE"]["Bucket"],
+            config["GOOGLE"]["ImageBucket"],
+            config["GOOGLE"]["MarkdownBucket"],
             config["GOOGLE"]["ServiceAccount"],
             config["GOOGLE"]["Credential"],
         )

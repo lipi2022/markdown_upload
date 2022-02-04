@@ -17,3 +17,8 @@ gcloud iam service-accounts keys create mdkey.json --iam-account=markdownupload@
 
 ## directory
 /Users/dialling/Library/Mobile Documents/com~apple~CloudDocs/md
+
+
+## todo
+
+-[] create sub directory for markdown 
