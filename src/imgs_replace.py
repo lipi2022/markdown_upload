@@ -20,11 +20,13 @@ def replace_img_src(root_dir, dest_dir):
 
             filename, file_extension = os.path.splitext(file)
             if file_extension == ".md":
-                print(dir_path, "/", file, sep="")
-                print(dest_dir_new, "/", file, sep="")
-                md_file = dir_path + "/" + file
-                dest_file = dest_dir_new + "/" + file
-                img_src_change(md_file, dest_file)
+                # print(dir_path, "/", file, sep="")
+                # print(dest_dir_new, "/", file, sep="")
+                if filename == "高盛和aws":  # just debug
+                    print("filename:", filename)
+                    md_file = dir_path + "/" + file
+                    dest_file = dest_dir_new + "/" + file
+                    img_src_change(md_file, dest_file)
 
 
 # md_file,dest_file : file with path
