@@ -1,23 +1,39 @@
+from email.mime import base
+import logging
+import os
+
 from google.cloud import storage
+from google.cloud.exceptions import Conflict
 
 
-def upload_blob(bucket_name, source_file_name, destination_blob_name):
-    """Uploads a file to the bucket."""
-    # The ID of your GCS bucket
-    # bucket_name = "your-bucket-name"
-    # The path to your file to upload
-    # source_file_name = "local/path/to/file"
-    # The ID of your GCS object
-    # destination_blob_name = "storage-object-name"
+class GoogleStorage:
+    """google storage class"""
 
-    storage_client = storage.Client()
-    bucket = storage_client.bucket(bucket_name)
-    blob = bucket.blob(destination_blob_name)
+    def __init__(self, project, bucket, service_account, credential):
+        self.project = project
+        self.bucket_name = bucket
+        self.service_account = service_account
+        self.credential = credential
+        self.storage_client = storage.Client()
 
-    blob.upload_from_filename(source_file_name)
+        try:
+            self.bucket = self.storage_client.create_bucket(self.bucket_name)
+        except Conflict:
+            logging.debug("create bucket failed, bucket alread exist")
+            self.bucket = self.storage_client.bucket(self.bucket_name)
 
-    print(
-        "File {} uploaded to {}.".format(
-            source_file_name, destination_blob_name
-        )
-    )
+    # upload to google storage, return new http_src
+    def upload_img(self, image_path_name):
+        print("upload image", image_path_name)
+
+        # only filename as destination file name
+        basename = os.path.basename(image_path_name)
+
+        blob = self.bucket.blob(basename)
+
+        blob.upload_from_filename(image_path_name)  # will overwrite existing
+        blob.make_public()  # public to share
+
+        print(f"image name:{basename}, public url:{blob.public_url}")
+
+        return blob.public_url

@@ -3,6 +3,7 @@ import configparser
 
 
 from src import replace_img_src
+from src import GoogleStorage
 
 
 # return
@@ -18,10 +19,26 @@ def init_log():
 
 if __name__ == "__main__":
     config = read_config()
+
+    # init cloud storage
+    if (
+        config["GOOGLE"]["Project"]
+        and config["GOOGLE"]["Bucket"]
+        and config["GOOGLE"]["ServiceAccount"]
+        and config["GOOGLE"]["Credential"]
+    ):
+        storage = GoogleStorage(
+            config["GOOGLE"]["Project"],
+            config["GOOGLE"]["Bucket"],
+            config["GOOGLE"]["ServiceAccount"],
+            config["GOOGLE"]["Credential"],
+        )
+
+    # init log file
     if config["LOG"]["Filename"]:
         logging.info("create log success:%s", config["LOG"]["Filename"])
         init_log()
     print("Starting")
 
     if config["DIR"]["Root"] and config["DIR"]["Dest"]:
-        replace_img_src(config["DIR"]["Root"], config["DIR"]["Dest"])
+        replace_img_src(config["DIR"]["Root"], config["DIR"]["Dest"], storage)
