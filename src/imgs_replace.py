@@ -3,65 +3,55 @@ import os
 import re
 
 
-def replace_img_src(root_dir, dest_dir, storage):
-
-    if not dest_dir:
-        logging.info("dest directory is null")
-        return
-
-    # create root directory,if exist do nothing
-    os.makedirs(dest_dir, exist_ok=True)
-    logging.info("create dest dir:%s", dest_dir)
+def replace_img_src(root_dir, storage):
 
     for dir_path, _dir_names, filenames in os.walk(root_dir):
 
         for file in filenames:
-            # create directory in dest dir
-            dest_dir_new = dir_path.replace(root_dir, dest_dir)
+
+            # just debug
+            if file != "DatabrickFinance.md":
+                continue
 
             filename, file_extension = os.path.splitext(file)
             if file_extension == ".md":
                 md_file = dir_path + "/" + file
-                dest_file = dest_dir_new + "/" + file
 
-                # check dest_dir exist
-                if not os.path.exists(dest_dir_new):
-                    os.makedirs(dest_dir_new)
+                # dest_file_path - root_dir = prefix
+                filename = md_file.removeprefix(root_dir + "/")
+                public_url = file_upload(md_file, storage, filename)
+                logger = logging.getLogger()
+                logger.setLevel(logging.INFO)
+                logger.info("upload %s success!", filename)
 
-                img_src_change(md_file, dest_file, storage)
 
+# upload file,filename: /finance/DatabrickFinance.md
+def file_upload(md_file, storage, filename):
+    # search and replace img src
+    new_data = regex_images(md_file, storage)
 
-# md_file,dest_file : file with path
-def img_src_change(md_file, dest_file_path, storage):
-
-    with open(md_file, "r") as file:
-        data = file.read()
-
-        # search and replace img src
-        new_data = regex_images(data, storage)
-
-        # write new data to new file
-        f = open(dest_file_path, "w")
-        f.write(new_data)  # overwrite existing file
-        f.close()
-
-        # upload markdown to cloud storage
-        storage.upload_object(dest_file_path, "markdown")
-
-        # close read file
-        file.close()
+    # upload markdown data to cloud storage
+    if new_data != "":
+        storage.upload_md_from_string(new_data, filename)
 
 
 # search img src ,upload to cloud storage ,return new data
-def regex_images(data, storage):
-    img_srcs = re.findall(r"!\[(.*)\]\((.+)\)", data)
+def regex_images(md_file, storage):
+    with open(md_file, "r") as file:
+        data = file.read()
 
-    # get img src
-    for img_tuple in img_srcs:
-        if img_tuple[1]:  # tuple's second item is src,first is description
-            new_img_src = storage.upload_object(img_tuple[1], "image")
+        img_srcs = re.findall(r"!\[(.*)\]\((.+)\)", data)
 
-            # replace data img src with new_img_src
-            data.replace(img_tuple[1], new_img_src)
+        new_data = data
+        # get img src
+        for img_tuple in img_srcs:
+            if img_tuple[1]:  # tuple's second item is src,first is description
+                # no prefix
+                new_img_src = storage.upload_image_from_file(img_tuple[1])
 
-    return data  # new data
+                # replace data img src with new_img_src
+                if new_img_src != "":
+                    new_data = new_data.replace(img_tuple[1], new_img_src)  # recurse
+        file.close()
+
+    return new_data  # new data

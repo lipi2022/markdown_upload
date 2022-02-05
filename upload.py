@@ -13,8 +13,8 @@ def read_config():
     return config
 
 
-def init_log():
-    logging.basicConfig(filename="markdown.log", encoding="utf-8", level=logging.DEBUG)
+def init_log(log_name):
+    logging.basicConfig(filename=log_name, encoding="utf-8", level=logging.DEBUG)
 
 
 if __name__ == "__main__":
@@ -38,9 +38,7 @@ if __name__ == "__main__":
 
     # init log file
     if config["LOG"]["Filename"]:
-        logging.info("create log success:%s", config["LOG"]["Filename"])
-        init_log()
-    print("Starting")
+        init_log(config["LOG"]["Filename"])
 
-    if config["DIR"]["Root"] and config["DIR"]["Dest"]:
-        replace_img_src(config["DIR"]["Root"], config["DIR"]["Dest"], storage)
+    if config["DIR"]["Root"]:
+        replace_img_src(config["DIR"]["Root"], storage)

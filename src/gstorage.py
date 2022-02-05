@@ -1,4 +1,3 @@
-from email.mime import base
 import logging
 import os
 
@@ -35,25 +34,30 @@ class GoogleStorage:
             logging.debug("create markdown bucket failed, markdown bucket alread exist")
             self.markdown_bucket = self.storage_client.bucket(self.markdown_bucket_name)
 
-    # upload to google storage, return new http_src.
-    # kind : image or markdown
-    def upload_object(self, file_with_path, kind):
-        # only filename as destination file name
-        basename = os.path.basename(file_with_path)
-
-        if kind == "image":
-            blob = self.image_bucket.blob(basename)
-        elif kind == "markdown":
-            blob = self.markdown_bucket.blob(basename)
-        else:
-            logging.error("Unknown kind")
-
+    # upload mk from data string
+    def upload_md_from_string(self, data_string, filename):
         try:
-            blob.upload_from_filename(file_with_path)  # will overwrite existing
+            blob = self.markdown_bucket.blob(filename)
+            blob.upload_from_string(data_string)
             blob.make_public()  # public to share
         except Exception as e:
             logging.error(e)
 
-        logging.info("upload: %s, url:%s", basename, blob.public_url)
+        return blob.public_url
+
+    # upload image from file
+    # filepath: file with path
+    # filename: pure filename , with prefix as directory.like /markdownimage/dog.png
+    def upload_image_from_file(self, filepath):
+        basename = os.path.basename(filepath)
+
+        try:
+            blob = self.image_bucket.blob(basename)
+            blob.make_public()
+            blob.upload_from_filename(filepath)  # will overwrite existing
+            blob.make_public()  # public to share
+        except Exception as e:
+            logging.error(e)
+            return ""  # upload failed ,return ""
 
         return blob.public_url
