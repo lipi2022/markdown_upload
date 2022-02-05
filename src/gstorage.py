@@ -1,5 +1,6 @@
 import logging
 import os
+import uuid
 
 from google.cloud import storage
 from google.cloud.exceptions import Conflict
@@ -41,7 +42,7 @@ class GoogleStorage:
             blob.upload_from_string(data_string)
             blob.make_public()  # public to share
         except Exception as e:
-            logging.error(e)
+            logging.error("upload string error:%s", e)
 
         return blob.public_url
 
@@ -49,15 +50,14 @@ class GoogleStorage:
     # filepath: file with path
     # filename: pure filename , with prefix as directory.like /markdownimage/dog.png
     def upload_image_from_file(self, filepath):
-        basename = os.path.basename(filepath)
+        uuid_name = str(uuid.uuid4())
 
         try:
-            blob = self.image_bucket.blob(basename)
-            blob.make_public()
+            blob = self.image_bucket.blob(uuid_name)
             blob.upload_from_filename(filepath)  # will overwrite existing
             blob.make_public()  # public to share
         except Exception as e:
-            logging.error(e)
+            logging.error("upload image error:%s", e)
             return ""  # upload failed ,return ""
 
         return blob.public_url

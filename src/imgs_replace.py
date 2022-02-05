@@ -9,9 +9,9 @@ def replace_img_src(root_dir, storage):
 
         for file in filenames:
 
-            # just debug
-            if file != "DatabrickFinance.md":
-                continue
+            # # just debug
+            # if file != "DatabrickFinance.md":
+            #     continue
 
             filename, file_extension = os.path.splitext(file)
             if file_extension == ".md":
